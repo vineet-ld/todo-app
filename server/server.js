@@ -34,7 +34,7 @@ app.get("/todos/:id", (request, response) => {
     let id = request.params.id;
 
     if(!ObjectID.isValid(id)) {
-        return response.status(400).send({
+        return response.status(404).send({
             error: "Invalid ID"
         });
     }
@@ -45,7 +45,7 @@ app.get("/todos/:id", (request, response) => {
                 error: "Todo not found"
             });
         }
-        response.send(todo);
+        response.send({todo});
     }).catch((e) => response.status(400).send(e));
 
 });
