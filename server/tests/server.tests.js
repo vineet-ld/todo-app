@@ -11,7 +11,9 @@ const testTodos = [{
     text: "Sample text 1"
 }, {
     _id: new ObjectID(),
-    text: "Sample text 2"
+    text: "Sample text 2",
+    completed: true,
+    completedAt: new Date().getTime()
 }];
 
 beforeEach((done) => {
@@ -162,5 +164,47 @@ describe("DELETE /todos/:id", () => {
             .expect(404)
             .end(done);
     })
+
+});
+
+describe("PATCH /todos/:id", () => {
+
+    it("should update the todo", (done) => {
+
+        request(app)
+            .patch(`/todos/${testTodos[0]._id.toHexString()}`)
+            .send({
+                text: "Text changed for test",
+                completed: true
+            })
+            .expect(200)
+            .expect((response) => {
+                let todo = response.body.todo;
+                expect(todo.text).toBe("Text changed for test");
+                expect(todo.completed).toBeTruthy();
+                expect(typeof todo.completedAt).toBe("number");
+            })
+            .end(done);
+
+    });
+
+    it("should clear completedAt when todo is not completed", (done) => {
+
+        request(app)
+            .patch(`/todos/${testTodos[1]._id.toHexString()}`)
+            .send({
+                text: "Text changed for test",
+                completed: false
+            })
+            .expect(200)
+            .expect((response) => {
+                let todo = response.body.todo;
+                expect(todo.text).toBe("Text changed for test");
+                expect(todo.completed).toBeFalsy();
+                expect(todo.completedAt).toBeNull();
+            })
+            .end(done);
+
+    });
 
 });
