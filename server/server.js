@@ -108,6 +108,24 @@ app.patch("/todos/:id", (request, response) => {
 
 });
 
+app.post("/users", (request, response) => {
+
+    let body = _.pick(request.body, ["email", "password"]);
+    let user = new User(body);
+
+    user.save()
+        .then((user) => {
+            return user.createAuthToken();
+        })
+        .then((token) => {
+            response.header("x-auth", token).send(user);
+        })
+        .catch((e) => {
+            response.status(400).send(e);
+        })
+
+});
+
 app.listen(port, () => {
     console.log(`Server started at ${port}`);
 });
