@@ -128,8 +128,27 @@ app.post("/users", (request, response) => {
 });
 
 app.get("/users/me", authenticate, (request, response) => {
-
     response.send(request.user);
+});
+
+app.post("/users/login", (request, response) => {
+    var creds = _.pick(request.body, ["email", "password"]);
+
+    User.findByCredentials(creds.email, creds.password)
+        .then((user) => {
+            user.createAuthToken()
+                .then((token) => {
+                    response.header("x-auth", token)
+                        .send(user);
+                })
+                .catch((e) => {
+                    response.status(400).send(e);
+                });
+
+        })
+        .catch((e) => {
+            response.status(404).send();
+        })
 
 });
 
