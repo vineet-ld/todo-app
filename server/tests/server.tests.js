@@ -237,6 +237,7 @@ describe("POST /users", () => {
             .expect((res) => {
                 expect(res.body._id).toBeDefined();
                 expect(res.body.email).toBe(email);
+                expect(res.headers["x-auth"]).toBeDefined();
             })
             .end((err) => {
                 if(err) {
@@ -291,6 +292,63 @@ describe("POST /users", () => {
                 expect(res.body.code).toBe(11000);
             })
             .end(done);
+
+    });
+
+});
+
+describe("POST /users/login", () => {
+
+    it("should login user and return auth token", (done) => {
+
+        request(app).post("/users/login")
+            .send({
+                email: seed.testUsers[1].email,
+                password: seed.testUsers[1].password
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.email).toBe(seed.testUsers[1].email);
+                expect(res.headers["x-auth"]).toBeDefined();
+            })
+            .end((err, res) => {
+                if(err) {
+                    return done(err);
+                }
+                User.findById(seed.testUsers[1]._id)
+                    .then((user) => {
+                        expect(user.tokens[0].access).toBe("auth");
+                        expect(user.tokens[0].token).toBe(res.headers["x-auth"]);
+                        done();
+                    })
+                    .catch((e) => done(e));
+            });
+
+    });
+
+    it("should reject invalid login", (done) => {
+
+        request(app).post("/users/login")
+            .send({
+                email: seed.testUsers[1].email,
+                password: "notvalid"
+            })
+            .expect(404)
+            .expect((res) => {
+                expect(res.body).not.toHaveProperty("email");
+                expect(res.headers["x-auth"]).toBeUndefined();
+            })
+            .end((err, res) => {
+                if(err) {
+                    return done(err);
+                }
+                User.findById(seed.testUsers[1]._id)
+                    .then((user) => {
+                        expect(user.tokens.length).toBe(0);
+                        done();
+                    })
+                    .catch((e) => done(e));
+            });
 
     });
 
