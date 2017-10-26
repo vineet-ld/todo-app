@@ -152,6 +152,16 @@ app.post("/users/login", (request, response) => {
 
 });
 
+app.delete("/users/me/token", authenticate, (request, response) => {
+    request.user.removeToken(request.token)
+        .then(() => {
+            response.send();
+        })
+        .catch((e) => {
+            response.status(400).send(e);
+        });
+});
+
 app.listen(port, () => {
     console.log(`Server started at ${port}`);
 });
