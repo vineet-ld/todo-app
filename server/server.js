@@ -17,9 +17,12 @@ var app = express();
 
 app.use(bodyParser.json());
 
-app.post("/todos", (request, response) => {
+app.post("/todos", authenticate, (request, response) => {
 
-    var todo = new Todo(request.body);
+    var todo = new Todo({
+        text: request.body.text,
+        _creator: request.user._id
+    });
     todo.save().then((result) => {
         response.send(result);
     }).catch((e) => {
@@ -28,13 +31,14 @@ app.post("/todos", (request, response) => {
 
 });
 
-app.get("/todos", (request, response) => {
-    Todo.find()
-        .then((todos) => response.send({todos}))
-        .catch((e) => response.status(400).send(e));
+app.get("/todos", authenticate, (request, response) => {
+    Todo.find({
+        _creator: request.user._id
+    }).then((todos) => response.send({todos}))
+      .catch((e) => response.status(400).send(e));
 });
 
-app.get("/todos/:id", (request, response) => {
+app.get("/todos/:id", authenticate, (request, response) => {
 
     let id = request.params.id;
 
@@ -44,7 +48,10 @@ app.get("/todos/:id", (request, response) => {
         });
     }
 
-    Todo.findById(id).then((todo) => {
+    Todo.findOne({
+        _id: id,
+        _creator: request.user._id
+    }).then((todo) => {
         if(!todo) {
             return response.status(404).send({
                 error: "Todo not found"
@@ -55,7 +62,7 @@ app.get("/todos/:id", (request, response) => {
 
 });
 
-app.delete("/todos/:id", (request, response) => {
+app.delete("/todos/:id", authenticate, (request, response) => {
 
     let id = request.params.id;
 
@@ -65,7 +72,10 @@ app.delete("/todos/:id", (request, response) => {
         })
     }
 
-    Todo.findByIdAndRemove(id).then((todo) => {
+    Todo.findOneAndRemove({
+        _id: id,
+        _creator: request.user._id
+    }).then((todo) => {
         if(!todo) {
             return response.status(404).send({
                 error: "Todo not found"
@@ -76,7 +86,7 @@ app.delete("/todos/:id", (request, response) => {
 
 });
 
-app.patch("/todos/:id", (request, response) => {
+app.patch("/todos/:id", authenticate, (request, response) => {
 
     let hexId = request.params.id;
     let body = _.pick(request.body, ["text", "completed"]);
@@ -94,7 +104,10 @@ app.patch("/todos/:id", (request, response) => {
         body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(hexId, {
+    Todo.findOneAndUpdate({
+        _id: hexId,
+        _creator: request.user._id
+    }, {
         $set: body
     }, {
         new: true

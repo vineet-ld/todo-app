@@ -11,12 +11,14 @@ const seed = {
 
     testTodos : [{
         _id: new ObjectID(),
-        text: "Sample text 1"
+        text: "Sample text 1",
+        _creator: userOneId
     }, {
         _id: new ObjectID(),
         text: "Sample text 2",
         completed: true,
-        completedAt: new Date().getTime()
+        completedAt: new Date().getTime(),
+        _creator: userTwoId
     }],
 
     setTodos: (done) => {
@@ -36,7 +38,11 @@ const seed = {
     }, {
         _id: userTwoId,
         email: "testuser2@test.com",
-        password: "usertwo"
+        password: "usertwo",
+        tokens: [{
+            access: "auth",
+            token: jwt.sign({_id: userTwoId}, "abc123")
+        }]
     }],
 
     setUsers: (done) => {
