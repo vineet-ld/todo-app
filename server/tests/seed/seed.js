@@ -33,7 +33,7 @@ const seed = {
         password: "userone",
         tokens: [{
             access: "auth",
-            token: jwt.sign({_id: userOneId}, "abc123")
+            token: jwt.sign({_id: userOneId}, process.env.JWT_SECRET)
         }]
     }, {
         _id: userTwoId,
@@ -41,7 +41,7 @@ const seed = {
         password: "usertwo",
         tokens: [{
             access: "auth",
-            token: jwt.sign({_id: userTwoId}, "abc123")
+            token: jwt.sign({_id: userTwoId}, process.env.JWT_SECRET)
         }]
     }],
 
